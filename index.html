@@ -161,6 +161,93 @@
                 <aside id="sidebar">
    
         
+    <div class="widget-wrap" id='categories'>
+        <h3 class="widget-title">
+            <span>categories</span>
+            &nbsp;
+            <a id='allExpand' href="#">
+                <i class="fa fa-angle-double-down fa-2x"></i>
+            </a>
+        </h3>
+        
+        
+        
+         <ul class="unstyled" id="tree" > 
+                    <li class="directory">
+                        <a href="#" data-role="directory">
+                            <i class="fa fa-folder"></i>
+                            &nbsp;
+                            Linux
+                        </a>
+                         <ul class="unstyled" id="tree" >  <li class="file"><a href="/2019/12/24/blog-test/">浅析缓冲区与各IO函数的缓冲机制</a></li>  </ul> 
+                    </li> 
+                     <li class="file"><a href="/2019/12/24/hello-world/">Hello World</a></li>  </ul> 
+    </div>
+    <script>
+        $(document).ready(function() {
+            var iconFolderOpenClass  = 'fa-folder-open';
+            var iconFolderCloseClass = 'fa-folder';
+            var iconAllExpandClass = 'fa-angle-double-down';
+            var iconAllPackClass = 'fa-angle-double-up';
+            // Handle directory-tree expansion:
+            // 左键单独展开目录
+            $(document).on('click', '#categories a[data-role="directory"]', function (event) {
+                event.preventDefault();
+
+                var icon = $(this).children('.fa');
+                var expanded = icon.hasClass(iconFolderOpenClass);
+                var subtree = $(this).siblings('ul');
+                icon.removeClass(iconFolderOpenClass).removeClass(iconFolderCloseClass);
+                if (expanded) {
+                    if (typeof subtree != 'undefined') {
+                        subtree.slideUp({ duration: 100 });
+                    }
+                    icon.addClass(iconFolderCloseClass);
+                } else {
+                    if (typeof subtree != 'undefined') {
+                        subtree.slideDown({ duration: 100 });
+                    }
+                    icon.addClass(iconFolderOpenClass);
+                }
+            });
+            // 右键展开下属所有目录
+            $('#categories a[data-role="directory"]').bind("contextmenu", function(event){
+                event.preventDefault();
+                
+                var icon = $(this).children('.fa');
+                var expanded = icon.hasClass(iconFolderOpenClass);
+                var listNode = $(this).siblings('ul');
+                var subtrees = $.merge(listNode.find('li ul'), listNode);
+                var icons = $.merge(listNode.find('.fa'), icon);
+                icons.removeClass(iconFolderOpenClass).removeClass(iconFolderCloseClass);
+                if(expanded) {
+                    subtrees.slideUp({ duration: 100 });
+                    icons.addClass(iconFolderCloseClass);
+                } else {
+                    subtrees.slideDown({ duration: 100 });
+                    icons.addClass(iconFolderOpenClass);
+                }
+            })
+            // 展开关闭所有目录按钮
+            $(document).on('click', '#allExpand', function (event) {
+                event.preventDefault();
+                
+                var icon = $(this).children('.fa');
+                var expanded = icon.hasClass(iconAllExpandClass);
+                icon.removeClass(iconAllExpandClass).removeClass(iconAllPackClass);
+                if(expanded) {
+                    $('#sidebar .fa.fa-folder').removeClass('fa-folder').addClass('fa-folder-open')
+                    $('#categories li ul').slideDown({ duration: 100 });
+                    icon.addClass(iconAllPackClass);
+                } else {
+                    $('#sidebar .fa.fa-folder-open').removeClass('fa-folder-open').addClass('fa-folder')
+                    $('#categories li ul').slideUp({ duration: 100 });
+                    icon.addClass(iconAllExpandClass);
+                }
+            });  
+        });
+    </script>
+
     
     <div id="toTop" class="fa fa-angle-up"></div>
 </aside>
@@ -268,6 +355,11 @@
                 
                     <div class="article-meta">
                         
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/Linux/">Linux</a>
+    </div>
+
                         
                         
     <div class="article-date">
@@ -328,11 +420,11 @@
                 
                 
                     
-                    <p><h3 id="1：用户空间和内核空间"><a href="#1：用户空间和内核空间" class="headerlink" title="1：用户空间和内核空间"></a>1：用户空间和内核空间</h3><pre><code>当一个进程被执行时，对于32为操作系统而言，它的寻址空间(虚拟地址空间)为4G，其中低位的3G由进程使用，称为用户空间，而高位的1G由内核使用，称为内核空间。每个进程都有自己的用户空间，但内核空间是被各进程共享的。</code></pre><h3 id="2：用户态和内核态"><a href="#2：用户态和内核态" class="headerlink" title="2：用户态和内核态"></a>2：用户态和内核态</h3><pre><code>CPU的某些指令如果使用不恰当，可能会造成数据损坏、系统崩溃等严重后果，为了保护内核的安全性和稳定性，系统将CPU指令划分了特权等级，如Linux系统使用两个级别的指令：Ring3和Ring0。当程序运行在Ring3时被称为运行在用户态，而Ring0时被称为运行在内核态。
-系统资源的管理是在内核态下完成的，如进程管理、输入输出IO、内存申请和释放、网络通信等。进程进入内核态的操作被称为系统调用。</code></pre><h3 id="3：C标准库IO缓冲区"><a href="#3：C标准库IO缓冲区" class="headerlink" title="3：C标准库IO缓冲区"></a>3：C标准库IO缓冲区</h3><pre><code>UNIX下一切皆文件(Everything is a file),键盘、显示器、串口、磁盘等设备在/dev 目录下都有一个特殊的设备文件与之对应。内核为用户预留和write和read函数接口来对文件进行读写，但每次IO操作就进行一次系统调用的效率并不高。因此，C标准库为每个打开的文件都分配一个IO缓冲区，这个缓冲区可以通过文件的FILE* 结构体指针找到，一般为1k字节。文件读写时直接对缓冲区操作而不需要在内核态和用户态之间频繁切换，进而加速了读写操作。
+                    <p><h3 id="1：用户空间和内核空间"><a href="#1：用户空间和内核空间" class="headerlink" title="1：用户空间和内核空间"></a>1：用户空间和内核空间</h3><pre><code>当一个进程被执行时，对于32为操作系统而言，它的寻址空间(虚拟地址空间)为4G，其中低位的3G由进程使用，称为用户空间，而高位的1G由内核使用，称为内核空间。每个进程都有自己的用户空间，但内核空间是被各进程共享的。</code></pre><h3 id="2：用户态和内核态"><a href="#2：用户态和内核态" class="headerlink" title="2：用户态和内核态"></a>2：用户态和内核态</h3><pre><code>    CPU的某些指令如果使用不恰当，可能会造成数据损坏、系统崩溃等严重后果，为了保护内核的安全性和稳定性，系统将CPU指令划分了特权等级，如Linux系统使用两个级别的指令：Ring3和Ring0。当程序运行在Ring3时被称为运行在用户态，而Ring0时被称为运行在内核态。
+系统资源的管理是在内核态下完成的，如进程管理、输入输出IO、内存申请和释放、网络通信等。进程进入内核态的操作被称为系统调用。</code></pre><h3 id="3：C标准库IO缓冲区"><a href="#3：C标准库IO缓冲区" class="headerlink" title="3：C标准库IO缓冲区"></a>3：C标准库IO缓冲区</h3><pre><code>    UNIX下一切皆文件(Everything is a file),键盘、显示器、串口、磁盘等设备在/dev 目录下都有一个特殊的设备文件与之对应。内核为用户预留和write和read函数接口来对文件进行读写，但每次IO操作就进行一次系统调用的效率并不高。因此，C标准库为每个打开的文件都分配一个IO缓冲区，这个缓冲区可以通过文件的FILE* 结构体指针找到，一般为1k字节。文件读写时直接对缓冲区操作而不需要在内核态和用户态之间频繁切换，进而加速了读写操作。
 以fgetc/fputc为例：当用户程序第一次调用fgetc读一个字节时,fgetc函数可能通过系统调用进入内核读取1k字节到IO缓冲区中,再返回缓冲区中的第一个字节给用户,并把读写位置指向缓冲区中的第二个字符,以后用户再调用fgetc就优先从缓冲区中读取,直到必须再次读写文件时才通过系统调用进入内核。
 另一方面,用户程序调用fputc时，通常只是写到IO缓冲区中,直到IO缓冲区写满了再通过系统调用把缓冲区中的数据传给内核,内核最终把数据写入磁盘或设备。如果用户程序希望把IO缓冲区中的数据立刻传给内核,可以使用库函数fflush(FILE*)。同样，fclose函数在关闭文件之前也会调用fflush函数。</code></pre><h3 id="4：C标准IO函数缓冲机制"><a href="#4：C标准IO函数缓冲机制" class="headerlink" title="4：C标准IO函数缓冲机制"></a>4：C标准IO函数缓冲机制</h3><pre><code>C标准库定义了多个IO函数，但它们的缓冲机制并不相同。可以分为三类：全缓冲，行缓冲和无缓冲。    
-全缓冲：缓冲区写满之后才进行系统调用把缓冲区的内容写入内核，如：fputc和fread。
+全缓冲：缓冲区写满之后才进行系统调用把缓冲区的内容写入内核，如：fputc和
 <p>
                 
             
